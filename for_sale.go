@@ -33,6 +33,46 @@ type Game struct {
 
 var _ brdgme.Gamer = &Game{}
 
+type PubState struct {
+	Players             int
+	BuyRoundsRemaining  int
+	SellRoundsRemaining int
+	OpenCards           card.Deck
+	BiddingPlayer       int
+	Bids                map[int]int
+	FinishedBidding     map[int]bool
+}
+
+type PlayerState struct {
+	PubState PubState
+	Player   int
+	Hand     card.Deck
+	Cheques  card.Deck
+	Chips    int
+}
+
+func (g *Game) ToPubState() PubState {
+	return PubState{
+		Players:             g.Players,
+		BuyRoundsRemaining:  g.BuildingDeck.Len() / g.Players,
+		SellRoundsRemaining: g.ChequeDeck.Len() / g.Players,
+		OpenCards:           g.OpenCards,
+		BiddingPlayer:       g.BiddingPlayer,
+		Bids:                g.Bids,
+		FinishedBidding:     g.FinishedBidding,
+	}
+}
+
+func (g *Game) ToPlayerState(player int) PlayerState {
+	return PlayerState{
+		PubState: g.ToPubState(),
+		Player:   player,
+		Hand:     g.Hands[player],
+		Cheques:  g.Cheques[player],
+		Chips:    g.Chips[player],
+	}
+}
+
 func (g *Game) New(players int) ([]brdgme.Log, error) {
 	logs := []brdgme.Log{}
 	if players < 3 || players > 5 {
@@ -75,18 +115,22 @@ func (g *Game) CurrentPhase() int {
 }
 
 func (g *Game) PubState() interface{} {
-	// TODO
-	return nil
+	return g.ToPubState()
 }
 
 func (g *Game) PlayerState(player int) interface{} {
-	// TODO
-	return nil
+	return g.ToPlayerState(player)
 }
 
 func (g *Game) Status() brdgme.Status {
-	// TODO
-	return brdgme.Status{}
+	if g.IsFinished() {
+		return brdgme.StatusFinished{
+			Placings: g.Placings(),
+		}.ToStatus()
+	}
+	return brdgme.StatusActive{
+		WhoseTurn: g.WhoseTurn(),
+	}.ToStatus()
 }
 
 func (g *Game) PlayerCount() int {
@@ -181,7 +225,7 @@ func (g *Game) Placings() []int {
 	metrics := [][]int{}
 	for p := 0; p < g.Players; p++ {
 		metrics = append(metrics, []int{
-			g.DeckValue(g.Cheques[p]),
+			g.PlayerPoints(p),
 			g.Chips[p],
 		})
 	}
@@ -358,11 +402,19 @@ func (g *Game) HighestBid() (player, amount int) {
 	return
 }
 
+func (g *Game) PlayerPoints(player int) int {
+	return g.DeckValue(g.Cheques[player]) + g.Chips[player]
+}
+
 func (g *Game) Points() []float32 {
 	points := make([]float32, g.Players)
+	isFinished := g.IsFinished()
 	for p := 0; p < g.Players; p++ {
-		// TODO actually points in here
-		points[p] = 0
+		if isFinished {
+			points[p] = float32(g.PlayerPoints(p))
+		} else {
+			points[p] = 0
+		}
 	}
 	return points
 }
@@ -392,11 +444,11 @@ func ChequeDeck() card.Deck {
 }
 
 func RenderBuilding(value int) string {
-	return fmt.Sprintf(`{{b}}{{c "green"}}%d{{_c}}{{_b}}`, value)
+	return render.Bold(render.Fg(render.Green, strconv.Itoa(value)))
 }
 
 func RenderCheque(value int) string {
-	return fmt.Sprintf(`{{b}}{{c "blue"}}%d{{_c}}{{_b}}`, value)
+	return render.Bold(render.Fg(render.Blue, strconv.Itoa(value)))
 }
 
 func RenderCards(deck card.Deck, renderer func(int) string) []string {
