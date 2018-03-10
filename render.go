@@ -6,7 +6,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Miniand/brdg.me/game/helper"
 	"github.com/brdgme-go/libbrdgme"
 	"github.com/brdgme-go/render"
 )
@@ -92,7 +91,7 @@ func (g *Game) Render(player *int) string {
 			"\n\n%s %s %s remaining",
 			render.Bold(strconv.Itoa(rounds)),
 			roundType,
-			helper.Plural(rounds, "round"),
+			libbrdgme.Plural(rounds, "round"),
 		))
 	}
 	return output.String()

@@ -71,6 +71,15 @@ func (g *Game) PassCommand(player int, remaining string) (brdgme.CommandResponse
 	}, err
 }
 
+func (g *Game) PlayCommand(player, building int, remaining string) (brdgme.CommandResponse, error) {
+	logs, err := g.Play(player, building)
+	return brdgme.CommandResponse{
+		Logs:      logs,
+		CanUndo:   false,
+		Remaining: remaining,
+	}, err
+}
+
 func (g *Game) CommandParser(player int) brdgme.Parser {
 	parsers := brdgme.OneOf{}
 	if g.CanBid(player) {

@@ -3,88 +3,107 @@ package for_sale
 import (
 	"testing"
 
-	"github.com/Miniand/brdg.me/game/card"
-	"github.com/Miniand/brdg.me/game/helper"
+	"github.com/brdgme-go/libcard"
 	"github.com/stretchr/testify/assert"
+)
+
+var names = []string{"Mick", "Steve", "BJ"}
+
+const (
+	Mick = iota
+	Steve
+	BJ
 )
 
 func TestFullGame(t *testing.T) {
 	g := &Game{}
-	assert.NoError(t, g.Start([]string{"Mick", "Steve", "BJ"}))
+	_, err := g.New(3)
+	assert.NoError(t, err)
 	// Set the state of the game to sorted decks
 	_, g.BuildingDeck = BuildingDeck().PopN(2)
 	_, g.ChequeDeck = ChequeDeck().PopN(2)
 	g.OpenCards, g.BuildingDeck = g.BuildingDeck.PopN(3)
 	// Play a round of buying
-	assert.Equal(t, []string{"Mick"}, g.WhoseTurn())
-	assert.NoError(t, helper.Cmd(g, helper.Mick, "bid 3"))
-	assert.Equal(t, []string{"Steve"}, g.WhoseTurn())
-	assert.Error(t, helper.Cmd(g, helper.Steve, "bid 3"))
-	assert.NoError(t, helper.Cmd(g, helper.Steve, "bid 4"))
-	assert.Equal(t, []string{"BJ"}, g.WhoseTurn())
-	assert.NoError(t, helper.Cmd(g, helper.BJ, "pass"))
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 17},
-		card.SuitRankCard{Rank: 18},
+	assert.Equal(t, []int{Mick}, g.WhoseTurn())
+	_, err = g.Command(Mick, "bid 3", names)
+	assert.NoError(t, err)
+	assert.Equal(t, []int{Steve}, g.WhoseTurn())
+	_, err = g.Command(Steve, "bid 3", names)
+	assert.Error(t, err)
+	_, err = g.Command(Steve, "bid 4", names)
+	assert.NoError(t, err)
+	assert.Equal(t, []int{BJ}, g.WhoseTurn())
+	_, err = g.Command(BJ, "pass", names)
+	assert.NoError(t, err)
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 17},
+		libcard.SuitRankCard{Rank: 18},
 	}, g.OpenCards)
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 16},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 16},
 	}, g.Hands[2])
 	assert.Equal(t, 15, g.Chips[2])
-	assert.Equal(t, []string{"Mick"}, g.WhoseTurn())
-	assert.NoError(t, helper.Cmd(g, helper.Mick, "pass"))
+	assert.Equal(t, []int{Mick}, g.WhoseTurn())
+	_, err = g.Command(Mick, "pass", names)
+	assert.NoError(t, err)
 	assert.Equal(t, 14, g.Chips[0])
 	assert.Equal(t, 11, g.Chips[1])
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 17},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 17},
 	}, g.Hands[0])
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 18},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 18},
 	}, g.Hands[1])
-	assert.Equal(t, []string{"Steve"}, g.WhoseTurn())
+	assert.Equal(t, []int{Steve}, g.WhoseTurn())
 	// One more buying phase so each player has 2 buildings.
-	assert.NoError(t, helper.Cmd(g, helper.Steve, "pass"))
-	assert.NoError(t, helper.Cmd(g, helper.BJ, "pass"))
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 15},
-		card.SuitRankCard{Rank: 17},
+	_, err = g.Command(Steve, "pass", names)
+	assert.NoError(t, err)
+	_, err = g.Command(BJ, "pass", names)
+	assert.NoError(t, err)
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 15},
+		libcard.SuitRankCard{Rank: 17},
 	}, g.Hands[0])
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 13},
-		card.SuitRankCard{Rank: 18},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 13},
+		libcard.SuitRankCard{Rank: 18},
 	}, g.Hands[1])
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 14},
-		card.SuitRankCard{Rank: 16},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 14},
+		libcard.SuitRankCard{Rank: 16},
 	}, g.Hands[2])
 	// End the buying phase early and shorten the selling phase.
-	g.BuildingDeck = card.Deck{}
+	g.BuildingDeck = libcard.Deck{}
 	_, g.ChequeDeck = g.ChequeDeck.PopN(12)
-	g.OpenCards = card.Deck{}
+	g.OpenCards = libcard.Deck{}
 	g.StartRound()
-	assert.Equal(t, []string{"Mick", "Steve", "BJ"}, g.WhoseTurn())
+	assert.Equal(t, []int{Mick, Steve, BJ}, g.WhoseTurn())
 	// Play a round of selling
-	assert.Error(t, helper.Cmd(g, helper.BJ, "play 18"))
-	assert.NoError(t, helper.Cmd(g, helper.BJ, "play 16"))
-	assert.Equal(t, []string{"Mick", "Steve"}, g.WhoseTurn())
-	assert.NoError(t, helper.Cmd(g, helper.Steve, "play 18"))
-	assert.Equal(t, []string{"Mick"}, g.WhoseTurn())
-	assert.NoError(t, helper.Cmd(g, helper.Mick, "play 17"))
+	_, err = g.Command(BJ, "play 18", names)
+	assert.Error(t, err)
+	_, err = g.Command(BJ, "play 16", names)
+	assert.NoError(t, err)
+	assert.Equal(t, []int{Mick, Steve}, g.WhoseTurn())
+	_, err = g.Command(Steve, "play 18", names)
+	assert.NoError(t, err)
+	assert.Equal(t, []int{Mick}, g.WhoseTurn())
+	_, err = g.Command(Mick, "play 17", names)
+	assert.NoError(t, err)
 	// Because there were only two cards each, assume that the last cards were
 	// automatically played.
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 5},
-		card.SuitRankCard{Rank: 3},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 5},
+		libcard.SuitRankCard{Rank: 3},
 	}, g.Cheques[0])
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 6},
-		card.SuitRankCard{Rank: 0},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 6},
+		libcard.SuitRankCard{Rank: 0},
 	}, g.Cheques[1])
-	assert.Equal(t, card.Deck{
-		card.SuitRankCard{Rank: 4},
-		card.SuitRankCard{Rank: 0},
+	assert.Equal(t, libcard.Deck{
+		libcard.SuitRankCard{Rank: 4},
+		libcard.SuitRankCard{Rank: 0},
 	}, g.Cheques[2])
 	// Check the game ended
 	assert.True(t, g.IsFinished())
-	assert.Equal(t, []string{"Mick"}, g.Winners())
+	assert.Equal(t, 1, g.Placings()[0])
 }
