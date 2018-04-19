@@ -1,0 +1,19 @@
+language: go
+before_deploy:
+- mkdir lambda
+- go build -o lambda/game cmd/*.go
+- curl https://raw.githubusercontent.com/brdgme/lambda/master/index.js > lambda/index.js
+deploy:
+  provider: lambda
+  function_name: for-sale
+  region: us-west-2
+  role: arn:aws:iam::161480335654:role/brdgme-game
+  runtime: nodejs4.3
+  handler_name: handler
+  access_key_id:
+    secure: GqlC4dL6Ixldt5jNDKgJp0G1pyFY6V3XLcg5wZpwROli87pivqYOnRt8GeHm3PrTYUEJYFcnAY1RCd4Ju7Op9VJMY8z/OktLeQL+UDWyyqTF4bHCXgv6eOd4H6scXLpxBbP0Q+yZAts+ySlINlUwkyEmukUQrw0N2DXcYYduWqdBHQ2Em1i3fNf6lTeZww3E26Hc5ke2l+vPEiYuRYLdNiyWswHQdeIandInLmN7uHF2nNHrt3UaV7TDleu0ggKQQHktX3o9cm03axAxp4rXZBdA/HBQHbBdH1dg5Z/Xq+GG1EWCJwABStAMl0APNtZ94ow+jstK6EsFoEMIO+d+Q2mqPHnHyyugaKhPJpkuSs3dA+bNGs3Pvb7jXHKq9NCy43/ORSovkWNMeD9DbPybLTXsGLf6lAyBza5OEfOXRg4cmt4LflZ9EtUijt13VPNBnJb14cNp9s7K9lEUH9R/dZZKQXQjkfqQBkW6776YCuBlqcbdnO959PStst6fpfYeM9lWpGILePPsAD3s7FSrCTPG4EEZHRmNdHG4CP43b+GuNwZMadpBPgIn4TtQpOhiFWMs/Y4TThBdBknq1lJNaktVjtIK8BOVIPf46/KSEPDXGoSXj7DcCYNezCTxhaOb5VPu/UvO5qMbkzil0pEh56QIoex/o6jj3IdRwmk1YO8=
+  secret_access_key:
+    secure: C1VbYMyKn8H9A20m7/cNlaAAI9BTdF3PMU2vCX9dEckEsSTf6FxKj6/c2k/xbzLWseHmRt6jsHzjXxN1D+CTUf93qnsoNi7KZCaBUFa7JWU/sFjZRR81HXLn9ywMUsXhWT91+eN7UNikslYb7IvRdn4ANWMjEF521wHS1yt2+VK4CvpsQKZtqCNfWVfyhQa1Q6bajfcXofRsL8uwGXw/jr93/zbbxfUdtpLBZHnOYEtzEYtZK9XZ2H39bYQJid5LKtoqZ6yjt8h48Cq8igCV+akYtdE25joN/XVGWphJT7mfUgBXQJRY+c1S+pVz/ohxsPHHrbvfgATNEQJoLK4vx70fzMRTCLC8+y6TE+MFq4bAV1TGKAWVLORwS1ik+BZxygLEjTrbtusEc+Uwyw5p9UJwYEamB3Gt75GuHglN1ftqJdyprsYNa5jO3VEo5sefub0pzgHYAfbn7DqMSmWiYeUSPTRHjtMb4/rc/Kg05g/LEYStl5qf+uHG+637W6hnSA7iJeKGiNt1R22n2zhzo3Dy/3cm43MsoiPTSX2mybc+jhJyeQMlq+5SkYt1wC39m9pwpFps498XsrgikNzdLGSS6oH4zQN3tIBwSXJ1Q3bHBym3Onq1fDxfhQule8flbSOhSMC6yAvkdb4HZHViv3R2gdx0xI60yHzgVX7UcT4=
+  publish: true
+  skip_cleanup: true
+  zip: lambda
