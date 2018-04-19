@@ -36,11 +36,11 @@ func TestFullGame(t *testing.T) {
 	_, err = g.Command(BJ, "pass", names)
 	assert.NoError(t, err)
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 17},
-		libcard.SuitRankCard{Rank: 18},
+		libcard.Card{Rank: 17},
+		libcard.Card{Rank: 18},
 	}, g.OpenCards)
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 16},
+		libcard.Card{Rank: 16},
 	}, g.Hands[2])
 	assert.Equal(t, 15, g.Chips[2])
 	assert.Equal(t, []int{Mick}, g.WhoseTurn())
@@ -49,10 +49,10 @@ func TestFullGame(t *testing.T) {
 	assert.Equal(t, 14, g.Chips[0])
 	assert.Equal(t, 11, g.Chips[1])
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 17},
+		libcard.Card{Rank: 17},
 	}, g.Hands[0])
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 18},
+		libcard.Card{Rank: 18},
 	}, g.Hands[1])
 	assert.Equal(t, []int{Steve}, g.WhoseTurn())
 	// One more buying phase so each player has 2 buildings.
@@ -61,16 +61,16 @@ func TestFullGame(t *testing.T) {
 	_, err = g.Command(BJ, "pass", names)
 	assert.NoError(t, err)
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 15},
-		libcard.SuitRankCard{Rank: 17},
+		libcard.Card{Rank: 15},
+		libcard.Card{Rank: 17},
 	}, g.Hands[0])
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 13},
-		libcard.SuitRankCard{Rank: 18},
+		libcard.Card{Rank: 13},
+		libcard.Card{Rank: 18},
 	}, g.Hands[1])
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 14},
-		libcard.SuitRankCard{Rank: 16},
+		libcard.Card{Rank: 14},
+		libcard.Card{Rank: 16},
 	}, g.Hands[2])
 	// End the buying phase early and shorten the selling phase.
 	g.BuildingDeck = libcard.Deck{}
@@ -92,16 +92,16 @@ func TestFullGame(t *testing.T) {
 	// Because there were only two cards each, assume that the last cards were
 	// automatically played.
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 5},
-		libcard.SuitRankCard{Rank: 3},
+		libcard.Card{Rank: 5},
+		libcard.Card{Rank: 3},
 	}, g.Cheques[0])
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 6},
-		libcard.SuitRankCard{Rank: 0},
+		libcard.Card{Rank: 6},
+		libcard.Card{Rank: 0},
 	}, g.Cheques[1])
 	assert.Equal(t, libcard.Deck{
-		libcard.SuitRankCard{Rank: 4},
-		libcard.SuitRankCard{Rank: 0},
+		libcard.Card{Rank: 4},
+		libcard.Card{Rank: 0},
 	}, g.Cheques[2])
 	// Check the game ended
 	assert.True(t, g.IsFinished())
