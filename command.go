@@ -5,7 +5,6 @@ import (
 	"strconv"
 
 	"github.com/brdgme-go/brdgme"
-	card "github.com/brdgme-go/libcard"
 )
 
 type BidCommand struct {
@@ -138,7 +137,7 @@ var PassParser = brdgme.Doc{
 func (g *Game) PlayParser(player int) brdgme.Parser {
 	cards := []brdgme.EnumValue{}
 	for _, c := range g.Hands[player] {
-		value := c.(card.SuitRankCard).Rank
+		value := c.Rank
 		cards = append(cards, brdgme.EnumValue{
 			Name:  strconv.Itoa(value),
 			Value: value,

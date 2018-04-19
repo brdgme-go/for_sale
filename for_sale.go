@@ -194,7 +194,7 @@ func (g *Game) StartSellingRound() []brdgme.Log {
 	if g.Hands[0].Len() == 1 {
 		// Autoplay the final card
 		for p := 0; p < g.Players; p++ {
-			playLogs, _ := g.Play(p, g.Hands[p][0].(card.SuitRankCard).Rank)
+			playLogs, _ := g.Play(p, g.Hands[p][0].Rank)
 			logs = append(logs, playLogs...)
 		}
 	}
@@ -211,7 +211,7 @@ func (g *Game) ClearBids() {
 func (g *Game) DeckValue(deck card.Deck) int {
 	value := 0
 	for _, c := range deck {
-		value += c.(card.SuitRankCard).Rank
+		value += c.Rank
 	}
 	return value
 }
@@ -318,7 +318,7 @@ func (g *Game) Play(player, building int) ([]brdgme.Log, error) {
 	if !g.CanPlay(player) {
 		return logs, errors.New("you are not able to play a building card at the moment")
 	}
-	remaining, n := g.Hands[player].Remove(card.SuitRankCard{
+	remaining, n := g.Hands[player].Remove(card.Card{
 		Rank: building,
 	}, 1)
 	if n == 0 {
@@ -330,21 +330,20 @@ func (g *Game) Play(player, building int) ([]brdgme.Log, error) {
 	if len(g.WhoseTurn()) == 0 {
 		played := card.Deck{}
 		for p, b := range g.Bids {
-			played = append(played, card.SuitRankCard{
+			played = append(played, card.Card{
 				Suit: b,
 				Rank: p,
 			})
 		}
 		for _, c := range played.Sort() {
-			src := c.(card.SuitRankCard)
-			p := src.Rank
+			p := c.Rank
 			cheque, g.OpenCards = g.OpenCards.Shift()
 			g.Cheques[p] = g.Cheques[p].Push(cheque)
 			logs = append(logs, brdgme.NewPublicLog(fmt.Sprintf(
 				`%s sold %s for %s`,
 				render.Player(p),
-				RenderBuilding(src.Suit),
-				RenderCheque(cheque.(card.SuitRankCard).Rank),
+				RenderBuilding(c.Suit),
+				RenderCheque(cheque.Rank),
 			)))
 		}
 		logs = append(logs, g.StartRound()...)
@@ -352,11 +351,11 @@ func (g *Game) Play(player, building int) ([]brdgme.Log, error) {
 	return logs, nil
 }
 
-func (g *Game) TakeFirstOpenCard(player int) card.SuitRankCard {
+func (g *Game) TakeFirstOpenCard(player int) card.Card {
 	var c card.Card
 	c, g.OpenCards = g.OpenCards.Shift()
 	g.Hands[player] = g.Hands[player].Push(c).Sort()
-	return c.(card.SuitRankCard)
+	return c
 }
 
 func (g *Game) NextBidder() []brdgme.Log {
@@ -422,7 +421,7 @@ func (g *Game) Points() []float32 {
 func BuildingDeck() card.Deck {
 	d := card.Deck{}
 	for i := 1; i <= 20; i++ {
-		d = d.Push(card.SuitRankCard{
+		d = d.Push(card.Card{
 			Rank: i,
 		})
 	}
@@ -432,7 +431,7 @@ func BuildingDeck() card.Deck {
 func ChequeDeck() card.Deck {
 	d := card.Deck{}
 	for i := 1; i <= 20; i++ {
-		c := card.SuitRankCard{
+		c := card.Card{
 			Rank: i,
 		}
 		if i < 3 {
@@ -454,7 +453,7 @@ func RenderCheque(value int) string {
 func RenderCards(deck card.Deck, renderer func(int) string) []string {
 	output := []string{}
 	for _, c := range deck {
-		output = append(output, renderer(c.(card.SuitRankCard).Rank))
+		output = append(output, renderer(c.Rank))
 	}
 	return output
 }
